@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import AboutDialog from './components/AboutDialog.jsx'
 import Diagram from './components/Diagram.jsx'
 import {
@@ -9,13 +9,26 @@ import { useSizer } from './sizer.js'
 // The page fills the window without scrolling where it can: the diagram beside the readings on a wide
 // screen, above them on a tall one. Everything is in em, scaled by the sizer.
 const SIZER = { designWidth: 1060, designHeight: 800, fitHeight: true, minScale: 0.75, maxScale: 2, reflowBelow: 40 }
+// A tall or narrow screen stacks everything in one column (index.css), so it's sized to that column's
+// width instead, and scrolls: a tablet held upright gets bigger text, not desktop-scaled small text.
+const TALL = '(max-aspect-ratio: 1/1), (max-width: 48em)'
+const TALL_SIZER = { designWidth: 600, fitHeight: false, minScale: 1, maxScale: 1.35, reflowBelow: 40 }
+
+function useMedia(query) {
+  const list = useMemo(() => window.matchMedia(query), [query])
+  return useSyncExternalStore(
+    (onChange) => { list.addEventListener('change', onChange); return () => list.removeEventListener('change', onChange) },
+    () => list.matches,
+  )
+}
 const fmt = (v) => v.toFixed(6)
 
 export default function App() {
   const [sides, setSides] = useState(4)
   const [fluid, setFluid] = useState(true)
   const sizerRef = useRef(null)
-  const scale = useSizer(sizerRef, { ...SIZER, enabled: fluid })
+  const tall = useMedia(TALL)
+  const scale = useSizer(sizerRef, { ...(tall ? TALL_SIZER : SIZER), enabled: fluid })
   const aboutRef = useRef(null)
   const infoRef = useRef(null)
 
