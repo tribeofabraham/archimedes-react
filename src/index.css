@@ -1,0 +1,196 @@
+/* Archimedes' Circle: its own classical look (gold on black, Cinzel and Cormorant Garamond), refined.
+   Everything is in em, scaled by sizer.js. Colours: src/theme.test.js holds text to 4.5:1 and the
+   edges of controls to 3:1. */
+:root {
+  --bg: #000000;
+  --panel: #0f0d08;
+  --gold: #d4b357;
+  --gold-lt: #e8c97a;
+  --gold-dim: #b59445;
+  --blue: #4a90c4;
+  --blue-lt: #82c0ec;
+  --red: #c44a3a;
+  --red-lt: #f08877;
+  --green-lt: #7fe0a0;
+  --white: #f0ece3;
+  --muted: #a59c87;
+  --line: #4a3f22;      /* decorative rules */
+  --edge: #8a7440;      /* the edges of controls */
+  --track: #2a2518;
+  --focus: #ffffff;
+  --display: 'Cinzel', Georgia, serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Raleway', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body { background: var(--bg); color: var(--white); font-family: var(--sans); line-height: 1.5; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--gold-lt); }
+:focus-visible { outline: 0.15em solid var(--focus); outline-offset: 0.15em; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+/* The page is the window; the sizer scales its font size */
+.sizer { height: 100%; }
+.page { min-height: 100%; height: 100%; display: flex; flex-direction: column; max-width: 70em; margin: 0 auto; padding: 0.8em 1.2em; }
+
+/* ── Header ── */
+.top { text-align: center; margin-bottom: 0.6em; }
+.eyebrow { font-family: var(--display); font-size: 0.72em; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); }
+.title-row { display: inline-flex; align-items: center; gap: 0.6em; }
+h1 { font-family: var(--serif); font-weight: 300; font-size: 2.6em; line-height: 1.05; color: var(--white); }
+h1 em { font-style: italic; color: var(--gold); }
+.subtitle { font-family: var(--serif); font-style: italic; font-size: 1.05em; color: var(--muted); }
+.info {
+  flex-shrink: 0; width: 1.9em; height: 1.9em; border-radius: 50%; border: 0.08em solid var(--gold);
+  background: transparent; color: var(--gold); font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 1.15em;
+  display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;
+}
+.info:hover { background: var(--gold); color: var(--bg); }
+
+/* ── Layout: the diagram beside the readings, or above them on a tall screen ── */
+.layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 21em; grid-template-rows: minmax(0, 1fr); gap: 1.6em; align-items: center; }
+/* The diagram's box is set by the layout, never by the canvas in it (which is sized to fit the box) */
+.diagram { height: 100%; min-height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.readings { max-height: 100%; overflow-y: auto; }
+.diagram canvas { display: block; border-radius: 0.25em; }
+
+/* ── Readings ── */
+.readings { display: flex; flex-direction: column; gap: 0.75em; min-width: 0; }
+.small-caps { font-family: var(--display); font-size: 0.72em; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+.small-caps.gold { color: var(--gold); }
+.sides { text-align: center; }
+.sides-num { font-family: var(--serif); font-weight: 300; font-size: 3em; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.shape-name { font-family: var(--serif); font-style: italic; font-size: 1.1em; color: var(--gold-dim); min-height: 1.3em; }
+
+.panel { border: 0.06em solid var(--line); border-radius: 0.4em; background: var(--panel); padding: 0.8em 1.1em; }
+.estimate { text-align: center; }
+.pi-value { font-family: var(--serif); font-weight: 300; font-size: 2.3em; line-height: 1.1; color: var(--gold-lt); font-variant-numeric: lining-nums tabular-nums; transition: color 0.3s; }
+.estimate.is-converged .pi-value { color: var(--green-lt); }
+.pi-true { font-family: var(--serif); font-style: italic; font-size: 1em; color: var(--muted); }
+.estimate.is-converged .pi-true { color: var(--green-lt); }
+
+.bounds { display: flex; flex-direction: column; gap: 0.5em; }
+.bound { border-radius: 0.25em; padding: 0.5em 0.9em; border-left: 0.15em solid; }
+.bound.inner { background: rgba(74, 144, 196, 0.1); border-color: var(--blue); }
+.bound.outer { background: rgba(196, 74, 58, 0.1); border-color: var(--red); }
+.bound-label { font-family: var(--display); font-size: 0.68em; letter-spacing: 0.2em; text-transform: uppercase; }
+.bound.inner .bound-label { color: var(--blue-lt); }
+.bound.outer .bound-label { color: var(--red-lt); }
+.bound-value { font-family: var(--serif); font-size: 1.45em; line-height: 1.2; font-variant-numeric: lining-nums tabular-nums; }
+.bound-note { font-size: 0.82em; color: var(--muted); }
+
+/* ── The slider and Archimedes' steps ── */
+.control { display: flex; flex-direction: column; gap: 0.6em; }
+.control-head { display: flex; justify-content: space-between; align-items: baseline; }
+.range-note { font-family: var(--serif); font-style: italic; color: var(--gold-dim); font-variant-numeric: lining-nums; }
+input[type='range'] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 0.4em; border-radius: 0.2em; cursor: pointer;
+  background: linear-gradient(to right, var(--gold) 0%, var(--gold) var(--progress, 0%), var(--track) var(--progress, 0%), var(--track) 100%);
+  margin: 0.6em 0;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 1.6em; height: 1.6em; border-radius: 50%; border: 0.18em solid var(--bg);
+  background: radial-gradient(circle at 40% 35%, var(--gold-lt), var(--gold)); box-shadow: 0 0 0.7em rgba(201, 168, 76, 0.6);
+}
+input[type='range']::-moz-range-thumb {
+  width: 1.6em; height: 1.6em; border-radius: 50%; border: 0.18em solid var(--bg);
+  background: radial-gradient(circle at 40% 35%, var(--gold-lt), var(--gold)); box-shadow: 0 0 0.7em rgba(201, 168, 76, 0.6);
+}
+input[type='range']:focus-visible { outline-offset: 0.5em; }
+.steps { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35em; }
+.steps-label { flex-basis: 100%; font-family: var(--serif); font-style: italic; color: var(--muted); }   /* its own line, so the five steps sit together */
+.step {
+  font-family: var(--serif); font-size: 1.05em; font-variant-numeric: lining-nums; min-width: 2.4em; padding: 0.1em 0.5em;
+  border: 0.08em solid var(--edge); border-radius: 0.3em; background: transparent; color: var(--gold-lt);
+}
+.step:hover { border-color: var(--gold); }
+.step[aria-pressed='true'] { background: var(--gold); border-color: var(--gold); color: #000; font-weight: 600; }
+
+/* ── The figure: the diagram, and the legend under it ── */
+.figure { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: 0.5em; }
+.figure .diagram { flex: 1; }
+.legend { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2em 1.2em; font-size: 0.85em; color: var(--muted); }
+.legend li { display: flex; align-items: center; gap: 0.5em; }
+.swatch { width: 0.75em; height: 0.75em; border-radius: 50%; flex-shrink: 0; }
+.swatch.circle { background: var(--gold); }
+.swatch.inner { background: var(--blue-lt); }
+.swatch.outer { background: var(--red-lt); }
+.swatch.radial { background: var(--gold-dim); opacity: 0.6; }
+
+/* ── Footer ── */
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6em 1em; margin-top: 0.8em; font-size: 0.85em; color: var(--muted); }
+.scale-switch {
+  display: inline-flex; align-items: center; gap: 0.6em; background: transparent; border: 0.08em solid var(--edge);
+  border-radius: 2em; padding: 0.35em 0.7em 0.35em 1em; color: var(--white);
+}
+.switch-track { position: relative; width: 2.6em; height: 1.4em; flex-shrink: 0; border-radius: 1em; background: var(--bg); border: 0.1em solid var(--edge); transition: background 0.15s; }
+.switch-knob { position: absolute; top: 50%; left: 0.15em; width: 0.95em; height: 0.95em; border-radius: 50%; background: var(--muted); transform: translateY(-50%); transition: left 0.15s; }
+.switch-state { min-width: 1.7em; font-weight: 600; color: var(--muted); }
+.scale-switch[aria-checked='true'] { border-color: var(--gold); }
+.scale-switch[aria-checked='true'] .switch-track { background: var(--gold); border-color: var(--gold); }
+.scale-switch[aria-checked='true'] .switch-knob { left: calc(100% - 1.1em); background: #000; }
+.scale-switch[aria-checked='true'] .switch-state { color: var(--gold-lt); }
+
+/* ── About dialog ── */
+.about {
+  margin: auto; width: min(40em, 94vw); max-height: 88vh; padding: 0; border: 0.06em solid var(--gold); border-radius: 0.5em;
+  background: var(--panel); color: var(--white); box-shadow: 0 1.2em 3.6em rgba(0, 0, 0, 0.6), 0 0 2.4em rgba(212, 179, 87, 0.15);
+}
+.about::backdrop { background: rgba(0, 0, 0, 0.8); }
+.about-inner { padding: 1.6em 1.9em; }
+.about-close {
+  float: right; margin: -0.4em -0.6em 0.6em 0.6em; padding: 0.3em 0.9em; border-radius: 0.3em;
+  border: 0.06em solid var(--edge); background: transparent; color: var(--gold-lt);
+}
+.about-close:hover { border-color: var(--gold); }
+.about-eyebrow { font-family: var(--display); font-size: 0.72em; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4em; }
+.about h2 { font-family: var(--serif); font-weight: 400; font-size: 1.9em; line-height: 1.1; margin-bottom: 0.8em; }
+.about h2 em { font-style: italic; color: var(--gold-lt); }
+.about h3 { font-family: var(--display); font-size: 0.8em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 1.2em 0 0.5em; }
+.about p, .about li { font-size: 0.95em; line-height: 1.65; margin-bottom: 0.7em; }
+.about ul { padding-left: 1.2em; }
+.about strong { color: var(--gold-lt); font-weight: 600; }
+.about .formula {
+  text-align: center; font-family: var(--serif); font-style: italic; font-size: 1.2em; color: var(--gold-lt);
+  padding: 0.5em 0; border-top: 0.06em solid var(--line); border-bottom: 0.06em solid var(--line);
+}
+
+/* ── A tall or narrow screen: the diagram on top, the readings under it, and the page scrolls ── */
+@media (max-aspect-ratio: 1/1), (max-width: 48em) {
+  .page { height: auto; }
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 1em; flex: none; }
+  .figure { height: auto; }
+  .diagram { height: auto; aspect-ratio: 1; width: min(100%, 62vh); margin: 0 auto; }
+  .readings { max-width: 34em; width: 100%; margin: 0 auto; }
+  h1 { font-size: 2em; }
+}
+
+/* ── A short, wide frame (a course's web window, a phone on its side): compact, so it fits ── */
+@media (min-aspect-ratio: 1/1) and (max-height: 620px) and (min-width: 48.01em) {
+  .page { padding: 0.5em 1em; }
+  .eyebrow, .subtitle { display: none; }   /* both are in the About dialog */
+  .top { margin-bottom: 0.4em; }
+  h1 { font-size: 2em; }
+  .layout { gap: 1.2em; }
+  .readings { gap: 0.45em; }
+  .sides { display: flex; align-items: baseline; justify-content: center; gap: 0.5em; }
+  .sides-num { font-size: 2.2em; }
+  .panel { padding: 0.5em 0.9em; }
+  .pi-value { font-size: 1.9em; }
+  .bounds { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45em; }
+  .bound { padding: 0.35em 0.6em; }
+  .bound-label { font-size: 0.6em; letter-spacing: 0.12em; }
+  .bound-value { font-size: 1.2em; }
+  .bound-note { display: none; }   /* "less / more than π" is in the labels' meaning and the About dialog */
+  input[type='range'] { margin: 0.3em 0; }
+  .control { gap: 0.3em; }
+  .legend { font-size: 0.75em; gap: 0.1em 0.9em; }
+  .foot { margin-top: 0.4em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
